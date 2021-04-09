@@ -8,26 +8,30 @@ sets
          m               'month'                         /1*12/
          w               'week'                          /1*52/
          d               'day'                           /1*365/
-         tec             'all the technologies'          /offshore_f, offshore_g, onshore, PV, river, lake,nuclear, PHS, battery, OCGT, CCGT, CCGT-CCS, methanization, pyrogaseification, ngas, gastank, methanation, electrolysis, ITES, CTES, resistive, hpc, hpd, boilerc, boilerd, heat-net, EV_heavy, EV_light, EV_bus, EV_train, ICE_heavy, ICE_light, ICE_bus/
+         tec             'all the technologies'          /offshore_f, offshore_g, onshore, PV, river, lake,nuclear, PHS, battery, OCGT, CCGT, CCGT-CCS, methanization, pyrogaseification, ngas, gastank, methanation, electrolysis, ITES, CTES, resistive, hpc, hpd, boilerc, boilerd, heat-net, EV_heavy, EV_light, EV_bus, EV_train, ICE_heavy, ICE_light, ICE_bus, hydrogen, H2_OCGT/
          gen(tec)        'the generation technologies'   /offshore_f, offshore_g, onshore, PV, river, lake,nuclear, methanization, pyrogaseification, ngas/
-         elec(tec)       'electricity technologies'      /offshore_f, offshore_g, onshore, PV, river, lake,nuclear, PHS, battery, OCGT, CCGT, CCGT-CCS/
+         elec(tec)       'electricity technologies'      /offshore_f, offshore_g, onshore, PV, river, lake,nuclear, PHS, battery, OCGT, CCGT, CCGT-CCS, H2_OCGT/
          gas(tec)        'gas technologiess'             /methanization, pyrogaseification, ngas, methanation, electrolysis, gastank/
          heat(tec)       'heat technologies'             /ITES, CTES, resistive, hpc, hpd, boilerc, boilerd/
+         lowheat(heat)   'low temperature heat'          /ITES, CTES, resistive, hpc, hpd, boilerc, boilerd/
+         midheat(heat)   'mid temperature heat'          /resistive, boilerd/
+         highheat(heat)  'high temperature heat'         /boilerd/
          transport(tec)  'transportation technologies'   /EV_heavy,EV_light,EV_bus,EV_train,ICE_heavy,ICE_light,ICE_bus/
          ev(transport)   'the electric transportation'   /EV_heavy,EV_light,EV_bus,EV_train/
          ice(transport)  'the ICE transportation'        /ICE_heavy,ICE_light,ICE_bus/
          transporttype   'transport demand types'        /heavy, light, bus, train/
          elec_gen(tec)   'electricity generation tecs'   /offshore_f, offshore_g, onshore, PV, river, lake, nuclear/
          gas_gen(tec)    'gas generation technologies'   /methanization, pyrogaseification, ngas/
-         str(tec)        'storage technologies'          /battery, phs, gastank, ITES, CTES/
-         str_elec(str)   'electric storage technologies' /battery, phs/
+         str(tec)        'storage technologies'          /battery, PHS, gastank, hydrogen, ITES, CTES/
+         str_elec(str)   'electric storage technologies' /battery, PHS/
          str_gas(str)    'gas storage technologies'      /gastank/
          str_heat(str)   'heat storage technologies'     /ITES, CTES/
-         conv(tec)       'vector change technologies'    /OCGT, CCGT, CCGT-CCS, methanation, electrolysis, resistive, hpc, hpd, boilerc, boilerd/
-         from_elec(conv) 'conversion from electricity'   /methanation, electrolysis, hpc,hpd, resistive/
+         conv(tec)       'vector change technologies'    /OCGT, CCGT, CCGT-CCS, methanation, electrolysis, resistive, hpc, hpd, boilerc, boilerd, H2_OCGT/
+         HP(conv)        'heat pumps'                    /hpc, hpd/
+         from_elec(conv) 'conversion from electricity'   /methanation, electrolysis, hpc, hpd, resistive/
          from_gas(conv)  'conversion from gas'           /OCGT, CCGT, CCGT-CCS, boilerc, boilerd/
          vre(tec)        'variable tecs'                 /offshore_f, offshore_g, onshore, PV, river/
-         frr(tec)        'technologies for upward FRR'   /lake, PHS, battery, OCGT, CCGT, CCGT-CCS, nuclear/
+         frr(tec)        'technologies for upward FRR'   /lake, PHS, battery, OCGT, CCGT, CCGT-CCS, nuclear, H2_OCGT/
          central(tec)    'central heating technologies'  /hpc, boilerc, CTES/
          scenCO2         'CO2 tax scenarios'             /0, 100, 200, 300, 400, 500/
          scenVRE         'VRE cost scenarios'            /cheap, central, expensive/
@@ -36,6 +40,7 @@ sets
          scenP2G         'methanation cost scenarios'    /cheap, central, expensive/
          costtype        'investment / operational costs'/capex,opex/
          biogas(tec)     'renewable gas options'         /methanization, pyrogaseification/
+         type            'heat demand type'              /lowT, midT, highT/
 ;
 first(h) = ord(h)=1;
 last(h) = ord(h)=card(h);
@@ -68,7 +73,7 @@ $include inputs/t_profiles.csv
 /;
 parameter demand_elec(h) 'electricity demand profile in each hour in GWh-e'
 /
-$include inputs/demand_elec2050.csv
+$include inputs/elec_demand_2050.csv
 /;
 Parameter lake_inflows(m) 'monthly lake inflows in GWh'
 /
@@ -78,15 +83,10 @@ parameter epsilon(vre) 'additional FRR requirement for variable renewable energi
 /
 $include  inputs/reserve_requirementsf.csv
 / ;
-parameter demand_hydrogen(h) 'hydrogen demand profile for steel production in each hour in GWh-th'
+parameter demand_heat(type,h) 'heat demand profile in each hour in GWh-th'
 *resource: GRTgas + TIGF
 /
-$include inputs/demand_hydrogen2050.csv
-/;
-parameter demand_heat(h) 'heat demand profile in each hour in GWh-th'
-*resource: GRTgas + TIGF
-/
-$include inputs/demand_heat2050ADEME.csv
+$include inputs/heat_demand_2050.csv
 /;
 parameter demand_transport(transporttype,h)    'hourly transport demand in GWh-useful'
 /
@@ -118,6 +118,10 @@ Parameter vOM(tec) 'Variable operation and maintenance costs in M€/GWh'
 /
 $include  inputs/vO&M_full.csv
 / ;
+parameter cop_hp(h) 'hourly coefficient of performance for heat pumps'
+/
+$include inputs/HP_COP.csv
+/ ;
 *Parameter costsVRE(vre,costtype,scenVRE) 'VRE costs depending on scenarios'
 */
 *$include  inputs/costsVRE.csv
@@ -136,10 +140,10 @@ $include  inputs/vO&M_full.csv
 */ ;
 $offdelim
 $Onlisting
-parameter eta_in(str) 'charging efifciency of storage technologies' /PHS 0.95, battery 0.9, gastank 1, ITES 1, CTES 1/;
-parameter eta_out(str) 'discharging efficiency of storage technolgoies' /PHS 0.9, battery 0.95, gastank 0.99, ITES 0.9, CTES 0.75/;
-parameter eta_conv(conv) 'the vector conversion efficiency of vector change options' /OCGT 0.45, CCGT 0.63, CCGT-CCS 0.53, methanation 0.6352, electrolysis 0.8, hpc 3.5, hpd 3.5, resistive 0.9, boilerc 0.9, boilerd 0.9/;
-parameter eta(transport) 'the conversion ratio of electricity/gas to kms' /EV_heavy 0.847458,EV_light 8,EV_bus 0.847458, EV_train 1,ICE_heavy 0.503398,ICE_light 3.84,ICE_bus 0.503398/;
+parameter eta_in(str) 'charging efifciency of storage technologies' /PHS 0.9, battery 0.9, gastank 1, ITES 1, CTES 1, hydrogen 1/;
+parameter eta_out(str) 'discharging efficiency of storage technolgoies' /PHS 0.9, battery 0.95, gastank 0.99, ITES 0.9, CTES 0.75, hydrogen 0.98/;
+parameter eta_conv(conv) 'the vector conversion efficiency of vector change options' /OCGT 0.45, CCGT 0.63, CCGT-CCS 0.53, methanation 0.6352, electrolysis 0.8, hpc 3.5, hpd 3.5, resistive 0.9, boilerc 0.9, boilerd 0.9, H2_OCGT 0.4/;
+parameter eta(transport) 'the conversion ratio of electricity/gas to kms' /EV_heavy 0.847458,EV_light 8,EV_bus 0.847458, EV_train 1,ICE_heavy 0.347584,ICE_light 1.97,ICE_bus 0.347584/;
 scalar pump_capa 'pumping capacity in GW' /9.3/;
 scalar max_phs 'maximum volume of energy can be stored in PHS reservoir in TWh' /0.18/;
 scalar load_uncertainty 'uncertainty coefficient for hourly demand' /0.01/;
@@ -150,14 +154,19 @@ scalar max_pyro 'maximum yearly energy can be produced from pyrogasification in 
 scalar max_central 'maximal yearly heat that can be satisfied by central heating in TWh' /151.19/;
 scalar cf_nuc 'maximum capacity factor of nuclear power plants' /0.90/;
 scalar ramp_rate 'maximum ramp up/down rate for nuclear power plant' /0.50/;
-scalar cf_ccgt 'maximum capaity factor of CCGT plant for a year' /0.90/;
-scalar cf_ccs /0.85/;
+*scalar cf_ccgt 'maximum capaity factor of CCGT plant for a year' /0.90/;
+*scalar cf_ccs /0.85/;
 parameter CO2_tax(scenCO2) 'CO2 tax for each CO2 tax scenario' /0 0,100 100,200 200,300 300,400 400,500 500/;
 parameter ngas_plus(scenCO2) 'the increase in price of natural gas because of CO2 tax' /0 0,100 22.95,200 45.9,300 68.85,400 91.8,500 114.75/;
 parameter ccs_minus(scenCO2) 'the subtract in the carbon tax coming from CCS' /0 0,100 -29.2, 200 -58.4, 300 -87.6, 400 -116.8, 500 -146/;
 scalar EV_batt 'the price energy related capex of EV batteries' /12.64/;
 scalar CO2potential 'the maximal CO2 that can be stored yearly'        /93/;
 parameter vOM0(*) /ngas 0.02354, CCGT-CCS 0.00576/;
+parameter demand_hydrogen(h) 'hydrogen demand profile for industry - flat profile' /4.56621/;
+*parameter demand_hydrogen(h) 'hydrogen demand profile for industry (40TWh) + aerial (57TWh) and marine (17TWh) transport - flat profile' /13.0137/;
+parameter capacity_ex(str);
+capacity_ex('hydrogen') = 3000;
+capacity_ex('phs') = 80.16
 *-------------------------------------------------------------------------------
 *                                Model
 *-------------------------------------------------------------------------------
@@ -178,15 +187,16 @@ equations        gene_vre                'variables renewable profiles generatio
                  capa_frr                'capacity needed for the secondary reserve requirements'
                  storing_const           'the definition of stored energy in the storage options'
                  conversion              'the mechanism of conversion'
+                 conv_hp
                  storage_const           'storage in the first hour is equal to the storage in the last hour'
                  lake_res                'constraint on water for lake reservoirs'
                  stored_cap              'maximum energy that is stored in storage units'
                  storage_capa            'hourly storage should not be more than discharging capacity'
-                 nuc_cf                  'the yearly capacity factor of nuclear power plants should not pass 80%'
-                 nuc_up                  'Nuclear power plant upward flexibility flexibility'
-                 nuc_down                'Nuclear power plant downward flexibility flexibility'
-                 ccgt_cf                 'the yearly capacity factor of CCGT'
-                 ccs_cf
+*                 nuc_cf                  'the yearly capacity factor of nuclear power plants should not pass 80%'
+*                 nuc_up                  'Nuclear power plant upward flexibility flexibility'
+*                 nuc_down                'Nuclear power plant downward flexibility flexibility'
+*                 ccgt_cf                 'the yearly capacity factor of CCGT'
+*                 ccs_cf
                  methanisation_max       'maximum yearly possible energy output from methanisation'
                  pyrogasification_max    'maximum yearly possible energy output from pyrogasification'
                  methanation_max         'maximum green CO2 that can be foud to produce methanation'
@@ -197,13 +207,12 @@ equations        gene_vre                'variables renewable profiles generatio
                  charging_profiles       'the charging profiles of EVs and ICEs'
                  trans_charge            'the weekly demand of transport should be satisfied during the week'
 *                 max_CO2                 'an assumtion to limit the maximal storable CO2 in MtCO2/year'
-                 hydrogen_lim            'the maximal hydrogen that can be injected in the gas network'
-                 hydrogen_lim1
-                 hydrogen_lim2
+                 hydrogen_electrolysis
                  ev_volume               'the weekly energy stored in electric vehicle should not be more than the available volume'
                  adequacy_elec           'supply/demand relation for the electricity demand'
                  adequacy_gas            'supply/demand relation for the gas demand'
-                 adequacy_heat           'supply/demand relation for the heat demand'
+                 adequacy_heat_low       'supply/demand relation for the heat demand'
+                 adequacy_heat_mid       'supply/demand relation for the heat demand'
                  adequacy_t_heavy        'supply/demand equilibrium for transport demand'
                  adequacy_t_light        'supply/demand equilibrium for transport demand'
                  adequacy_t_bus          'supply/demand equilibrium for transport demand'
@@ -216,12 +225,13 @@ storage_const(str,first,last)..  SOC(str,first)                  =e=     SOC(str
 lake_res(m)..                    lake_inflows(m)                 =g=     sum(h$(month(h) = ord(m)),GENE('lake',h))/1000;
 stored_cap(str,h)..              SOC(str,h)                      =l=     CAPACITY(str);
 storage_capa(str,h)..            STORAGE(str,h)                  =l=     CAPA(str);
-conversion(h,conv)..             GENE(conv,h)                    =e=     CONVERT(conv,h)*eta_conv(conv);
-nuc_cf..                         sum(h,GENE('nuclear',h))        =l=     CAPA('nuclear')*cf_nuc*8760;
-nuc_up(h,h+1)..                  GENE('nuclear',h+1) + RSV('nuclear',h+1) =l= GENE('nuclear',h) + ramp_rate*CAPA('nuclear')   ;
-nuc_down(h,h+1)..                GENE('nuclear',h+1) =g= GENE('nuclear',h)*(1 - ramp_rate)   ;
-ccgt_cf..                        sum(h,GENE('CCGT',h))           =l=     CAPA('CCGT')*cf_ccgt*8760;
-ccs_cf..                         sum(h,GENE('CCGT-CCS',h))       =l=     CAPA('CCGT-CCS')*cf_ccs*8760;
+conversion(h,conv$(conv<>HP))..  GENE(conv,h)                    =e=     CONVERT(conv,h)*eta_conv(conv);
+conv_hp(h,HP)..                  GENE(HP,h)                      =e=     CONVERT(HP,h)*cop_hp(h);
+*nuc_cf..                         sum(h,GENE('nuclear',h))        =l=     CAPA('nuclear')*cf_nuc*8760;
+*nuc_up(h,h+1)..                  GENE('nuclear',h+1) + RSV('nuclear',h+1) =l= GENE('nuclear',h) + ramp_rate*CAPA('nuclear')   ;
+*nuc_down(h,h+1)..                GENE('nuclear',h+1) =g= GENE('nuclear',h)*(1 - ramp_rate)   ;
+*ccgt_cf..                        sum(h,GENE('CCGT',h))           =l=     CAPA('CCGT')*cf_ccgt*8760;
+*ccs_cf..                         sum(h,GENE('CCGT-CCS',h))       =l=     CAPA('CCGT-CCS')*cf_ccs*8760;
 methanisation_max..              sum(h,GENE('methanization',h))  =l=     max_metha*1000;
 pyrogasification_max..           sum(h,GENE('pyrogaseification',h))=l=   max_pyro*1000;
 methanation_max..                sum(h,CONVERT('methanation',h)) =l=     sum(h,GENE('methanization',h))*3/7;
@@ -232,17 +242,16 @@ max_heat..                       sum(h,GENE('heat-net',h))       =l=     max_cen
 charging_profiles(transport,h).. GENE(transport,h)               =l=     CAPA(transport)*profile(transport,h);
 trans_charge(transport,w)..      sum(h$(ord(w)=week(h)),GENE(transport,h)) =g= sum(h$(ord(w) = week(h)), CHARGE(transport,h));
 *max_CO2..                        CO2potential                    =g=     sum(h,GENE('ccgt-ccs',h))*292.4/1000000 ;
-hydrogen_lim(h)..                GENE('electrolysis',h)          =l=     SOC('gastank',h)*0.0635+demand_hydrogen(h);
-hydrogen_lim1(h)..               GENE('electrolysis',h)          =l=     sum(gas,GENE(gas,h))*0.0635+demand_hydrogen(h);
-hydrogen_lim2..                  sum(h,GENE('electrolysis',h))   =l=     sum(h,(GENE('ngas',h)+GENE('methanization',h)+GENE('pyrogaseification',h)+GENE('methanation',h))*(6.35/93.65)+demand_hydrogen(h));
+hydrogen_electrolysis(h)..       GENE('electrolysis',h)          =e=     STORAGE('hydrogen',h)+ demand_hydrogen(h)- GENE('hydrogen',h)-CONV('H2_OCGT',h);
 ev_volume(w)..                   sum((h,ev)$(ord(w)=week(h)),GENE(ev,h)) =l= EV_VOL;
 adequacy_elec(h)..               sum(elec,GENE(elec,h))          =g=     demand_elec(h) + sum(str_elec,STORAGE(str_elec,h)) + sum(from_elec,CONVERT(from_elec,h))+sum(ev,GENE(ev,h));
-adequacy_gas(h)..                sum(gas,GENE(gas,h))            =e=     sum(str_gas,STORAGE(str_gas,h)) + sum(from_gas,CONVERT(from_gas,h))+sum(ice,GENE(ice,h))+demand_hydrogen(h);
-adequacy_heat(h)..               sum(heat,GENE(heat,h))          =e=     demand_heat(h) + sum(str_heat,STORAGE(str_heat,h));
+adequacy_gas(h)..                sum(gas,GENE(gas,h))            =e=     sum(str_gas,STORAGE(str_gas,h)) + sum(from_gas,CONVERT(from_gas,h))+sum(ice,GENE(ice,h));
+adequacy_heat_low(h)..           sum(lowheat,GENE(lowheat,h))    =g=     sum(type, demand_heat(type,h)) + sum(str_heat,STORAGE(str_heat,h));
+adequacy_heat_mid(h)..           sum(midheat,GENE(midheat,h))    =g=     demand_heat('midT',h)+demand_heat('highT',h);
 adequacy_t_heavy(h)..            CHARGE('EV_heavy',h)*eta('EV_heavy')+CHARGE('ICE_heavy',h)*eta('ICE_heavy') =e= demand_transport('heavy',h);
 adequacy_t_light(h)..            CHARGE('EV_light',h)*eta('EV_light')+CHARGE('ICE_light',h)*eta('ICE_light') =e= demand_transport('light',h);
 adequacy_t_bus(h)..              CHARGE('EV_bus',h)*eta('EV_bus')+CHARGE('ICE_bus',h)*eta('ICE_bus') =e= demand_transport('bus',h);
-obj..                            COST                            =e=     (sum(tec,(CAPA(tec)-capa_ex(tec))*capex(tec))+ sum(str,CAPACITY(str)*capex_en(str))+sum(tec,(CAPA(tec)*fOM(tec))) +sum((tec,h),GENE(tec,h)*vOM(tec))+EV_VOL*EV_batt)/1000;
+obj..                            COST                            =e=     (sum(tec,(CAPA(tec)-capa_ex(tec))*capex(tec))+ sum(str,(CAPACITY(str)-capacity_ex(str))*capex_en(str))+sum(tec,(CAPA(tec)*fOM(tec))) +sum((tec,h),GENE(tec,h)*vOM(tec))+EV_VOL*EV_batt)/1000;
 *-------------------------------------------------------------------------------
 *                                Initial and fixed values
 *-------------------------------------------------------------------------------
@@ -258,7 +267,8 @@ CAPA.up('pv') = capa_max('pv');
 CAPACITY.fx('gastank') = tank_max*1000;
 *two main equations defined here
 CHARGE.fx('EV_train',h) = demand_transport('train',h)/eta('EV_train');
-GENE.lo('electrolysis',h) = demand_hydrogen(h);
+GENE.lo('boilerd',h) = demand_heat('hightT',h);
+CAPACITY.lo('hydrogen') = capacity_ex('hydrogen');
 *-------------------------------------------------------------------------------
 *                                Model options
 *-------------------------------------------------------------------------------
@@ -284,7 +294,7 @@ EOLES.optfile=1; EOLES.dictfile=2;
 *$If exist EOLES_p.gdx execute_loadpoint 'EOLES_p';
 parameter sumgene_elec; parameter sumgene_gas; parameter gene_tec(tec);
 parameter dem_h2; parameter dem_elec; parameter dem_heat; parameter dem_transport;
-parameter elec_gas; parameter gas_elec; parameter elec_heat; parameter gas_heat;
+parameter elec_gas; parameter gas_elec; parameter elec_heat; parameter gas_heat; parameter elec_h2; parameter h2_elec;
 parameter elec_transport; parameter gas_transport;
 parameter str_loss_elec 'yearly power storage related loss in % of power production';
 parameter conv_loss_elec 'overall energy loss from P2G conversion in % of power production';
@@ -313,7 +323,7 @@ file results_csv /'outputs/summary_n.csv'/;
 parameter nSTORAGE(str,h);
 parameter nCONVERT(conv,h);
 put hourly_profiles;
-put 'CO2_scen','hour'; loop(tec, put tec.tl;) put 'demand_elec', 'ElecStr','Pump','demand_hydrogen','gastank','demand_heat','CTES','ITES','elec_market','gas_market','heat_market',loop(conv, put conv.tl;) put 'OK'/ ;
+put 'CO2_scen','hour'; loop(tec, put tec.tl;) put 'demand_elec', 'ElecStr','Pump','H2_str','demand_hydrogen','gastank','demand_heat','CTES','ITES','elec_market','gas_market','heat_market',loop(conv, put conv.tl;) put 'OK'/ ;
 put results_csv;
 results_csv.pc=5;
 results_csv.pw=32767;
@@ -342,8 +352,10 @@ dem_h2 = sum(h,demand_hydrogen(h))/1000;
 dem_elec = sum(h,demand_elec(h))/1000;
 dem_heat = sum(h,demand_heat(h))/1000;
 dem_transport = sum((transporttype,h),demand_transport(transporttype,h))/1000;
-elec_gas = sum(h,(CONVERT.l('methanation',h)+CONVERT.l('electrolysis',h)))/1000;
+elec_gas = sum(h,CONVERT.l('methanation',h))/1000;
+elec_h2 = sum(h,CONVERT.l('electrolysis',h))/1000;
 gas_elec = sum(h,(CONVERT.l('OCGT',h)+CONVERT.l('CCGT-CCS',h)+CONVERT.l('CCGT',h)))/1000;
+h2_elec = sum(h,CONVERT.l('H2_OCGT',h))/1000;
 elec_heat = sum(h,(CONVERT.l('resistive',h)+CONVERT.l('hpc',h)+CONVERT.l('hpd',h)))/1000;
 gas_heat = sum(h,(CONVERT.l('boilerd',h)+CONVERT.l('boilerc',h)))/1000;
 elec_transport = sum((h,ev),CHARGE.l(ev,h))/1000;
@@ -358,7 +370,7 @@ heat_spot_price(h) = 1000000*adequacy_heat.m(h);
 t_heavy_spot_price(h) = 1000000*adequacy_t_heavy.m(h);
 t_light_spot_price(h) = 1000000*adequacy_t_light.m(h);
 t_bus_spot_price(h) = 1000000*adequacy_t_bus.m(h);
-h2_spot_price(h) = 1000000*GENE.m('electrolysis',h);
+h2_spot_price(h) = 1000000*hydrogen_electrilysis.m(h);
 elec_marginal_cost = sum(h,elec_spot_price(h))/8760;
 gas_marginal_cost = sum(h,gas_spot_price(h))/8760;
 heat_marginal_cost = sum(h,heat_spot_price(h))/8760;
@@ -401,7 +413,7 @@ put scenCO2.tl, COST.l, technical_cost, loop(tec, put CAPA.l(tec);) loop(tec,put
 put hourly_profiles;
 hourly_profiles.pc=5;
 loop (h,
-put scenCO2.tl, put h.tl; loop(tec, put GENE.l(tec,h);) put demand_elec(h); put nSTORAGE('PHS',h), nSTORAGE('battery',h), demand_hydrogen(h); put nSTORAGE('gastank',h); put nSTORAGE('CTES',h),nSTORAGE('ITES',h),elec_spot_price(h),gas_spot_price(h), heat_spot_price(h); loop(conv, put nCONVERT(conv,h);) put 'OK'/
+put scenCO2.tl, put h.tl; loop(tec, put GENE.l(tec,h);) put demand_elec(h); put nSTORAGE('battery',h), nSTORAGE('phs',h), nSTORAGE('hydrogen',h), demand_hydrogen(h); put nSTORAGE('gastank',h); put nSTORAGE('CTES',h),nSTORAGE('ITES',h),elec_spot_price(h),gas_spot_price(h), heat_spot_price(h); loop(conv, put nCONVERT(conv,h);) put 'OK'/
 ;);
 );
 *-------------------------------------------------------------------------------

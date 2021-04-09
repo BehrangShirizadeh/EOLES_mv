@@ -1,0 +1,15 @@
+Offshore,0
+Onshore,0
+PV,0
+river,0
+lake,0
+PHS,0.000001
+Battery,0.000001
+nuclear,0.0095
+OCGT,0
+CCGT-CCS,0.00576
+ngas,0.03
+methanisation,0.072
+pyrogasification,0.085
+gastank,0.000001
+methanation,0.003
