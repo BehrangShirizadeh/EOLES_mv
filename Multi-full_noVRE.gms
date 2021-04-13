@@ -270,6 +270,9 @@ CAPACITY.fx('gastank') = tank_max*1000;
 CHARGE.fx('EV_train',h) = demand_transport('train',h)/eta('EV_train');
 GENE.lo('boilerd',h) = demand_heat(h,'highT');
 CAPACITY.lo('hydrogen') = capacity_ex('hydrogen');
+*-------------------
+CAPA.fx(vre) = 0;
+GENE.fx(vre,h) = 0;
 *-------------------------------------------------------------------------------
 *                                Model options
 *-------------------------------------------------------------------------------
@@ -322,8 +325,8 @@ parameter lc_elec;
 *parameter cf(tec) 'load factor of all technologies';
 parameter net_emission 'in MtCO2/year'; parameter captured_CO2 'in MtCO2/year'; parameter stored_CO2;
 parameter technical_cost;
-file hourly_profiles /'outputs/hourly_profiles_n.csv'/ ;
-file results_csv /'outputs/summary_n.csv'/;
+file hourly_profiles /'outputs/hourly_profiles_noVRE_n.csv'/ ;
+file results_csv /'outputs/summary_noVRE_n.csv'/;
 parameter nSTORAGE(str,h);
 parameter nCONVERT(conv,h);
 put hourly_profiles;
