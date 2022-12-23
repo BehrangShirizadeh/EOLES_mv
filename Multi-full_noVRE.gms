@@ -102,19 +102,19 @@ parameter capa_max(tec) 'maximum capacities of the technologies by December 2017
 /
 $include  inputs/max_capas.csv
 / ;
-parameter capex(tec) 'annualized capex cost in M€/GW/year'
+parameter capex(tec) 'annualized capex cost in Mâ‚¬/GW/year'
 /
 $include  inputs/annuities_full.csv
 / ;
-parameter capex_en(str)  'annualized capex cost in M€/GWh/year'
+parameter capex_en(str)  'annualized capex cost in Mâ‚¬/GWh/year'
 /
 $include inputs/str_annuities_full.csv
 / ;
-parameter fOM(tec) 'annualized fixed operation and maintenance costs M€/GW'
+parameter fOM(tec) 'annualized fixed operation and maintenance costs Mâ‚¬/GW'
 /
 $include  inputs/fO&M_full.csv
 / ;
-Parameter vOM(tec) 'Variable operation and maintenance costs in M€/GWh'
+Parameter vOM(tec) 'Variable operation and maintenance costs in Mâ‚¬/GWh'
 /
 $include  inputs/vO&M_full.csv
 / ;
@@ -181,7 +181,7 @@ variables        GENE(tec,h)     'hourly energy generation in TWh'
                  CAPACITY(str)   'energy volume of storage technologies in GWh'
                  RSV(frr,h)      'required upward frequency restoration reserve in GW'
                  EV_VOL          'the volume of electric vehicles in GWh'
-                 COST            'final investment cost in b€'
+                 COST            'final investment cost in bâ‚¬'
 positive variables GENE(tec,h),CAPA(tec),STORAGE(str,h),SOC(str,h), S(str), CAPACITY(str),RSV(frr,h),CONVERT(conv,h) ;
 equations        gene_vre                'variables renewable profiles generation'
                  gene_capa               'capacity and genration relation for technologies'
@@ -243,7 +243,7 @@ max_heat..                       sum(h,GENE('heat-net',h))       =l=     max_cen
 charging_profiles(transport,h).. GENE(transport,h)               =l=     CAPA(transport)*profile(transport,h);
 trans_charge(transport,w)..      sum(h$(ord(w)=week(h)),GENE(transport,h)) =g= sum(h$(ord(w) = week(h)), CHARGE(transport,h));
 *max_CO2..                        CO2potential                    =g=     sum(h,GENE('ccgt-ccs',h))*292.4/1000000 ;
-hydrogen_electrolysis(h)..       GENE('electrolysis',h)          =e=     STORAGE('hydrogen',h)+ demand_hydrogen(h)- GENE('hydrogen',h)-CONVERT('H2_OCGT',h);
+hydrogen_electrolysis(h)..       GENE('electrolysis',h)          =e=     STORAGE('hydrogen',h)+ demand_hydrogen(h)- GENE('hydrogen',h)+CONVERT('H2_OCGT',h);
 ev_volume(w)..                   sum((h,ev)$(ord(w)=week(h)),GENE(ev,h)) =l= EV_VOL;
 adequacy_elec(h)..               sum(elec,GENE(elec,h))          =g=     demand_elec(h) + sum(str_elec,STORAGE(str_elec,h)) + sum(from_elec,CONVERT(from_elec,h))+sum(ev,GENE(ev,h));
 adequacy_gas(h)..                sum(gas,GENE(gas,h))            =e=     sum(str_gas,STORAGE(str_gas,h)) + sum(from_gas,CONVERT(from_gas,h))+sum(ice,GENE(ice,h));
@@ -303,21 +303,21 @@ parameter elec_transport; parameter gas_transport;
 parameter str_loss_elec 'yearly power storage related loss in % of power production';
 parameter conv_loss_elec 'overall energy loss from P2G conversion in % of power production';
 parameter conv_loss_gas 'overall energy loss from G2P conversion in % of gas production';
-*parameter lcoe(gen) 'levelized cost of energy production for each production technology in €/MWh';
-*parameter lcos(str) 'levelized cost of energy storage for each storage technology in €/MWh';
-*parameter lcoc(conv) 'levelized cost of conversion for each of vector change technologies in €/MWh';
+*parameter lcoe(gen) 'levelized cost of energy production for each production technology in â‚¬/MWh';
+*parameter lcos(str) 'levelized cost of energy storage for each storage technology in â‚¬/MWh';
+*parameter lcoc(conv) 'levelized cost of conversion for each of vector change technologies in â‚¬/MWh';
 parameter elec_spot_price(h) 'marginal cost'; parameter gas_spot_price(h) 'marginal cost';
 parameter heat_price_high(h) 'marginal cost';parameter heat_price_mid(h) 'marginal cost';parameter heat_price_low(h) 'marginal cost';
 parameter h2_spot_price(h) 'marginal cost';
 parameter t_heavy_spot_price(h); parameter t_light_spot_price(h);parameter t_bus_spot_price(h);
-parameter elec_marginal_cost 'average value over the year of power spot price in €/MWh-e';
-parameter gas_marginal_cost 'average value over the year of gas spot price in €/MWh-th';
-parameter heat_marginal_high 'average value over the year of gas spot price in €/MWh-th';
-parameter heat_marginal_mid 'average value over the year of gas spot price in €/MWh-th';
-parameter heat_marginal_low 'average value over the year of gas spot price in €/MWh-th';
+parameter elec_marginal_cost 'average value over the year of power spot price in â‚¬/MWh-e';
+parameter gas_marginal_cost 'average value over the year of gas spot price in â‚¬/MWh-th';
+parameter heat_marginal_high 'average value over the year of gas spot price in â‚¬/MWh-th';
+parameter heat_marginal_mid 'average value over the year of gas spot price in â‚¬/MWh-th';
+parameter heat_marginal_low 'average value over the year of gas spot price in â‚¬/MWh-th';
 parameter transport_marginal_cost; parameter h2_marginal_cost;
-parameter G2P_bought 'overall yearly money spent to the gas bought for injection in the electricity in M€';
-parameter P2G_bought 'overall yearly money spent to the electricity bought for injection in the gas in M€';
+parameter G2P_bought 'overall yearly money spent to the gas bought for injection in the electricity in Mâ‚¬';
+parameter P2G_bought 'overall yearly money spent to the electricity bought for injection in the gas in Mâ‚¬';
 parameter G2H_bought; parameter P2H_bought; parameter P2T_bought; parameter G2T_bought;
 parameter lcoe_elec; parameter lcoe_gas; parameter lcoe_heat; parameter lcoe_h2;
 parameter lc_elec;
